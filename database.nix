@@ -1,24 +1,24 @@
 { system, nixpkgs, ... }: let
   pkgs = import nixpkgs { inherit system; };
 in {
-  postgresql = {
+  postgresql = rec {
     pg_ctl = {
       dir,
       logfile ? "${dir}/logs",
       port ? 5432,
     ... }: args: (builtins.concatStringsSep " " [
       "${pkgs.postgresql}/bin/pg_ctl"
-      "-D ${dir}"
+      "-D $(realpath ${dir})"
       "-l ${logfile}"
       "-o \"-p ${builtins.toString port}\""
-      "-o \"--unix_socket_directories='${dir}'\""
+      "-o \"--unix_socket_directories='$(realpath ${dir})'\""
 
-    ]) + args;
+    ]) + " " + args;
 
     init_db = { dir, ... }: ''
       mkdir -p ${dir}
       if [ ! -f ${dir}/PG_VERSION ]; then
-        initdb -D ${dir} --no-locale --encoding=UTF8
+        ${pkgs.postgresql}/bin/initdb -D ${dir} --no-locale --encoding=UTF8
       fi
 
     '';
@@ -43,12 +43,18 @@ in {
       port,
       user,
       dbname,
-      ... }: ''
-      if ! ${pkgs.postgresql}/bin/psql -h ${dir} \
+      ... }@args: ''
+      if ! ${pkgs.postgresql}/bin/psql -h $(realpath ${dir}) \
         -p ${builtins.toString port} -U ${user} \
         -n "${dbname}" \
         -c "SELECT * FROM pg_catalog.pg_user"|grep ${user} 1>/dev/null; then
-        ${pkgs.postgresql}/bin/createuser -p ${builtins.toString port} -h ${dir} -d ${user}
+        if ! ${pkgs.postgresql}/bin/createuser \
+          -p ${builtins.toString port} \
+          -h $(realpath ${dir}) \
+          -d ${user}; then
+            ${stopdb args}
+            exit 1
+        fi
       fi
 
     '';
@@ -58,12 +64,35 @@ in {
       port,
       user,
       dbname,
-      ... }: ''
-      if ! ${pkgs.postgresql}/bin/psql -h ${dir} \
+      ... }@args: ''
+      if ! ${pkgs.postgresql}/bin/psql \
+        -h $(realpath ${dir}) \
         -p ${builtins.toString port} -U ${user} -n "${dbname}" \
         -c "SELECT * FROM pg_catalog.pg_database" 1>/dev/null 2>/dev/null; then
-        ${pkgs.postgresql}/bin/createdb -h ${dir} -p ${builtins.toString port} -U ${user} ${dbname}
+        if ! ${pkgs.postgresql}/bin/createdb
+          -h $(realpath ${dir}) \
+          -p ${builtins.toString port} \
+          -U ${user} ${dbname}; then
+            ${stopdb args}
+            exit 1
+        fi
       fi
+
+    '';
+
+    stopdb = { dir, ...}: ''
+      if [ -f ${dir}/postmaster.pid ]; then
+        ${pkgs.postgresql}/bin/pg_ctl -D ${dir} stop
+      fi
+
+    '';
+
+    stop_on_interrupt = args: ''
+      function interrupt() {
+        echo -e -n "\033[1K\r"
+        ${stopdb args}
+      }
+      trap interrupt SIGINT
 
     '';
   };
