@@ -22,4 +22,7 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Build examples
-        run: nix run ./examples#build_all
+        run: |
+          cd examples
+          nix flake lock --override-input nix_web_lib $(realpath ../)
+          nix run ./examples#build_all
