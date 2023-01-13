@@ -25,4 +25,4 @@ jobs:
         run: |
           cd examples
           nix flake lock --override-input nix_web_lib $(realpath ../)
-          nix run ./examples#build_all
+          nix run .#build_all
