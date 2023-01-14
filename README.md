@@ -2,7 +2,7 @@
 
 Build Web frameworks using Nix
 
-Presentation post [on my blog](http://localhost:4000/nix/2023/01/13/building-web-with-nix.html)
+Presentation post [on my blog](https://litchipi.github.io/nix/2023/01/14/nixifying-build-web-app.html)
 
 ## Backends
 
