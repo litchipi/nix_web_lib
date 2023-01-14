@@ -37,5 +37,25 @@
       react = weblib.frontend.react.build { src = ./frontend/react; };
       vue = weblib.frontend.vue.build { src = ./frontend/vue; };
     };
+
+    packages.database = {
+      postgresql = let
+        dblib = weblib.database.postgresql;
+        args = {
+          dir = "./psql";
+          host = "localhost";
+          dbname = "test";
+          user = "test";
+          port = 5465;
+        };
+      in pkgs.writeShellScript "test_postgresql_script" ''
+        ${dblib.init_db args }
+        ${dblib.pg_ctl args "start" }
+        ${dblib.db_check_connected args }
+        ${dblib.ensure_user_exists args }
+        ${dblib.ensure_db_exists args }
+        ${dblib.stop_on_interrupt args }
+      '';
+    };
   });
 }
