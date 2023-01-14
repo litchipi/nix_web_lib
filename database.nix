@@ -23,13 +23,6 @@ in {
 
     '';
 
-    stop_db = { dir, ... }: ''
-      if [ -f ${dir}/postmaster.pid ]; then
-        ${pkgs.postgresql}/bin/pg_ctl -D ${dir} stop
-      fi
-
-    '';
-
     db_check_connected = { host, port, user, dbname, ... }: ''
       ${pkgs.postgresql}/bin/pg_isready --quiet -h ${host} \
         -p ${builtins.toString port} \
