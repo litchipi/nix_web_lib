@@ -25,6 +25,7 @@
       ));
     in { type = "app"; program = "${exec}"; };
 
+    # Backend
     packages.backend = {
       rust.actix-web = weblib.backend.rust.build {
         src = ./backend/rust/actix_web;
@@ -33,11 +34,13 @@
       };
     };
 
+    # Frontend
     packages.frontend = {
-      react = weblib.frontend.react.build { src = ./frontend/react; };
-      vue = weblib.frontend.vue.build { src = ./frontend/vue; };
+      react = weblib.frontend.react.build { src = ./frontend/javascript/react; };
+      vue = weblib.frontend.vue.build { src = ./frontend/javascript/vue; };
     };
 
+    # Database
     packages.database = {
       postgresql = let
         dblib = weblib.database.postgresql;
