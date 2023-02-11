@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs/22.11;
     flake-utils.url = github:numtide/flake-utils;
-    nix_web_lib.url = path:..;
+    nix_web_lib.url = path:../;
   };
 
   outputs = inputs: with inputs; flake-utils.lib.eachDefaultSystem (system: let
