@@ -38,6 +38,7 @@
     packages.frontend = {
       react = weblib.frontend.react.build { src = ./frontend/javascript/react; };
       vue = weblib.frontend.vue.build { src = ./frontend/javascript/vue; };
+      svelte = weblib.frontend.svelte.build { src = ./frontend/javascript/svelte; };
     };
 
     # Database

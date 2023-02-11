@@ -1,7 +1,8 @@
 { system, nixpkgs, ... }: let
   pkgs = import nixpkgs { inherit system; };
+  lib = pkgs.lib;
 
-  build_yarn = type: { src, ... }: (pkgs.mkYarnPackage {
+  build_yarn = type: { src, ... }@args: (pkgs.mkYarnPackage {
     name = "${type}_frontend";
     inherit src;
     builtInput = [ pkgs.yarn ];
@@ -12,6 +13,7 @@
     '';
   }).overrideAttrs (oldAttrs: let
     pname = oldAttrs.pname;
+    purge_node_modules = type == "react" || type == "vue";
   in
     {
       doDist = false;
@@ -19,12 +21,13 @@
       buildPhase = ''
         runHook preBuild
         shopt -s dotglob
-
+      '' + (if purge_node_modules then ''
         rm deps/${pname}/node_modules
         mkdir deps/${pname}/node_modules
         pushd deps/${pname}/node_modules
         ln -s ../../../node_modules/* .
         popd
+      '' else "") + ''
         yarn --offline build
         runHook postBuild
       '';
@@ -33,7 +36,8 @@
         dirname = if type == "react"
           then "build" else
           if type == "vue" then "dist" else
-          builtins.throw "Expected 'react' or 'vue', got ${type}";
+          if type == "svelte" then "dist" else
+          builtins.throw "Expected 'svelte', 'react' or 'vue', got ${type}";
       in ''
         runHook preInstall
         mv deps/${pname}/${dirname} $out
@@ -43,4 +47,5 @@
 in {
   react.build = build_yarn "react";
   vue.build = build_yarn "vue";
+  svelte.build = build_yarn "svelte";
 }
