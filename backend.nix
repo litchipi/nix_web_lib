@@ -5,6 +5,7 @@
       cargo2nix_file ? "${src}/Cargo.nix",
       bin_name ? "backend",
       rustBuilderArgs ? {},
+      ...
     }: let
       pkgs = import nixpkgs {
         inherit system;
