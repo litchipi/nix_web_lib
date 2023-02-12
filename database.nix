@@ -39,8 +39,7 @@ in {
       ... }@args: ''
       if ! ${pkgs.postgresql}/bin/psql -h $(realpath ${dir}) \
         -p ${builtins.toString port} -U ${user} \
-        -n "${dbname}" \
-        -c "SELECT * FROM pg_catalog.pg_user"|grep ${user} 1>/dev/null; then
+        -c "SELECT * FROM pg_catalog.pg_user"|grep ${user} 1>/dev/null 2>/dev/null; then
         if ! ${pkgs.postgresql}/bin/createuser \
           -p ${builtins.toString port} \
           -h $(realpath ${dir}) \
@@ -62,7 +61,7 @@ in {
         -h $(realpath ${dir}) \
         -p ${builtins.toString port} -U ${user} -n "${dbname}" \
         -c "SELECT * FROM pg_catalog.pg_database" 1>/dev/null 2>/dev/null; then
-        if ! ${pkgs.postgresql}/bin/createdb
+        if ! ${pkgs.postgresql}/bin/createdb \
           -h $(realpath ${dir}) \
           -p ${builtins.toString port} \
           -U ${user} ${dbname}; then
