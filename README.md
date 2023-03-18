@@ -12,6 +12,7 @@ Presentation post [on my blog](https://litchipi.github.io/nix/2023/01/14/nixifyi
 
 - React: `weblib.frontend.react.build`
 - VueJS: `weblib.frontend.vue.build`
+- Svelte: `weblib.frontend.svelte.build`
 
 ## Databases
 
